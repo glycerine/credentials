@@ -59,3 +59,14 @@ func (c Credentials) FromContext(ctx context.Context) (*jws.ClaimSet, error) {
 
 	return c.FromString(parts[1])
 }
+
+func (c Credentials) UnaryServerInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+	claims, err := c.FromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	ctx = context.WithValue(ctx, "claims", claims)
+
+	return handler(ctx, req)
+}
