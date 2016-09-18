@@ -19,13 +19,25 @@ var (
 	ErrTokenTypeInvalid      = grpc.Errorf(codes.Unauthenticated, "credentials: token type invalid")
 )
 
-type Credentials struct {
+type Options struct {
 	Key       *rsa.PublicKey
 	TokenType string
 }
 
+type Credentials struct {
+	Options Options
+}
+
+func NewCredentials(options Options) *Credentials {
+	if options.TokenType == "" {
+		options.TokenType = "Bearer"
+	}
+
+	return &Credentials{options}
+}
+
 func (c Credentials) FromString(token string) (*jws.ClaimSet, error) {
-	err := jws.Verify(token, c.Key)
+	err := jws.Verify(token, c.Options.Key)
 	if err != nil {
 		return nil, ErrVerification
 	}
@@ -53,7 +65,7 @@ func (c Credentials) FromContext(ctx context.Context) (*jws.ClaimSet, error) {
 
 	parts := strings.Split(value, " ")
 
-	if len(parts) != 2 && strings.ToLower(parts[0]) != strings.ToLower(c.TokenType) {
+	if len(parts) != 2 && strings.ToLower(parts[0]) != strings.ToLower(c.Options.TokenType) {
 		return nil, ErrTokenTypeInvalid
 	}
 
