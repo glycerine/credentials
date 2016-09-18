@@ -37,9 +37,11 @@ func NewCredentials(options Options) *Credentials {
 }
 
 func (c Credentials) FromString(token string) (*jws.ClaimSet, error) {
-	err := jws.Verify(token, c.Options.Key)
-	if err != nil {
-		return nil, ErrVerification
+	if c.Options.Key != nil {
+		err := jws.Verify(token, c.Options.Key)
+		if err != nil {
+			return nil, ErrVerification
+		}
 	}
 
 	claims, err := jws.Decode(token)
