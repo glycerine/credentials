@@ -67,7 +67,7 @@ func (c Credentials) FromContext(ctx context.Context) (*jws.ClaimSet, error) {
 
 	parts := strings.Split(value, " ")
 
-	if len(parts) != 2 && strings.ToLower(parts[0]) != strings.ToLower(c.Options.TokenType) {
+	if len(parts) != 2 || strings.ToLower(parts[0]) != strings.ToLower(c.Options.TokenType) {
 		return nil, ErrTokenTypeInvalid
 	}
 
